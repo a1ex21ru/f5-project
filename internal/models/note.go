@@ -6,9 +6,13 @@ import (
 )
 
 type Note struct {
-	gorm.Model
 	Name        string `json:"name" gorm:"column:name"`
 	Description string `json:"description,omitempty" gorm:"column:description"`
+	gorm.Model
+}
+
+type Notes struct {
+	Notes []Note `json:"data"`
 }
 
 func (Note) TableName() string {
@@ -23,4 +27,13 @@ type UpdateNote struct {
 
 func (UpdateNote) TableName() string {
 	return "notes"
+}
+
+type NoteResponse struct {
+	Message string `json:"message"`
+	Data    Note   `json:"data,omitempty"`
+}
+
+type ErrorResponse struct {
+	Message string `json:"message"`
 }

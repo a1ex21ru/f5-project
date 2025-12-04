@@ -97,7 +97,7 @@
 
   <script>
     $(() => {
-      $.get('http://localhost:8080/api/notes/').done(response => {
+      $.get('/api/notes').done(response => {
         const list = $('#notes-list');
         const notes = response.data || [];
 
@@ -106,12 +106,13 @@
         }
 
         notes.forEach(note => {
+          // language=HTML
           const noteEl = `
             <div class="note-item">
               <div class="note-title">${note.name}</div>
               <div class="note-description">${note.description || ''}</div>
               <div class="note-actions">
-                <a href="/edit.html/${note.ID}">Edit</a>
+                <a href="edit.html?id=${note.ID}">Edit</a>
                 <button onclick="deleteNote('${note.ID}')">Delete</button>
               </div>
             </div>
@@ -119,7 +120,7 @@
           list.append(noteEl);
         });
       }).fail(xhr => {
-        console.log('fuck')
+        console.log("duck")
         alert('Failed to load notes: ' + (xhr.responseJSON?.message || 'Unknown error'));
       });
     });

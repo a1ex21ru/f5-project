@@ -36,7 +36,7 @@ func main() {
 		}
 	}()
 
-	log.Println(`Server started on your localhost:8080`)
+	log.Println(`Server started on your http://localhost:8080`)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

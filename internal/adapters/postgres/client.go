@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"f5-project/internal/models"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 	"os"
 )
 
@@ -40,6 +42,12 @@ func NewClient(ctx context.Context) (*Client, error) {
 	if err = sqlConn.PingContext(ctx); err != nil {
 		return nil, fmt.Errorf("%s : %w", fn, err)
 	}
+
+	err = connDB.AutoMigrate(&models.Note{})
+	if err != nil {
+		log.Fatalf("%s : %v", fn, err)
+	}
+	log.Printf("%s : migration completed succesfully", fn)
 
 	return &Client{
 		gormConn: connDB,

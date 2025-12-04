@@ -1,0 +1,45 @@
+networks:
+  owl-net:
+    driver: bridge
+
+services:
+  postgres:
+    image: docker.io/postgres:16.3
+    container_name: f5-postgres
+    hostname: f5-postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - owl-net
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: practice
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d practice"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  f5-api:
+    build:
+      context: ./
+    container_name: f5-api
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: practice
+      POSTGRES_HOST: f5-postgres
+      GIN_MODE: release
+      port: "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - owl-net

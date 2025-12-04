@@ -19,6 +19,17 @@ func NewHandler(service *service.NoteService) *NoteHandler {
 	return &NoteHandler{service: service}
 }
 
+// CreateNote godoc
+// @Summary      Create a new note
+// @Description  Create a new note with the provided data
+// @Tags         notes
+// @Accept       json
+// @Produce      json
+// @Param        note  body      models.Note  true  "Note data"
+// @Success      201   {object}  models.NoteResponse
+// @Failure      400   {object}  models.ErrorResponse
+// @Failure      500   {object}  models.ErrorResponse
+// @Router       /api/notes [post]
 func (h *NoteHandler) CreateNote(c *gin.Context) {
 	const fn = "CreateNote"
 
@@ -34,25 +45,37 @@ func (h *NoteHandler) CreateNote(c *gin.Context) {
 	}
 
 	if err = h.service.Create(&note); err != nil {
-		c.JSON(http.StatusBadRequest,
-			gin.H{
-				"error": "error creating note",
+		c.JSON(http.StatusInternalServerError,
+			models.ErrorResponse{
+				Message: "error creating note",
 			})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "note created",
+	c.JSON(http.StatusCreated, models.NoteResponse{
+		Message: "note created",
 	})
 }
 
+// UpdateNote godoc
+// @Summary      Update a note
+// @Description  Update an existing note by ID
+// @Tags         notes
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                 true  "Note ID"
+// @Param        note  body      models.UpdateNote  true  "Updated note data"
+// @Success      200   {object}  models.NoteResponse
+// @Failure      400   {object}  models.ErrorResponse
+// @Failure      404   {object}  models.ErrorResponse
+// @Router       /api/notes/{id} [patch]
 func (h *NoteHandler) UpdateNote(c *gin.Context) {
 	const fn = "UpdateNote"
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"error": "invalid id",
 		})
 		return
@@ -60,57 +83,90 @@ func (h *NoteHandler) UpdateNote(c *gin.Context) {
 
 	var input models.Note
 	if err = c.BindJSON(&input); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "invalid input",
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Message: "invalid input",
 		})
 		return
 	}
 
 	if err = h.service.Update(id, &input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "error updating note",
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Message: "error updating note",
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "note updated",
+	c.JSON(http.StatusOK, models.NoteResponse{
+		Message: "note updated",
 	})
 	return
 }
 
+// DeleteNote godoc
+// @Summary      Delete a note
+// @Description  Delete a note by ID
+// @Tags         notes
+// @Accept       json
+// @Produce      json
+// @Param        id  path      int  true  "Note ID"
+// @Success      200 {object}  models.NoteResponse
+// @Failure      400 {object}  models.ErrorResponse
+// @Router       /api/notes/{id} [delete]
 func (h *NoteHandler) DeleteNote(c *gin.Context) {
 
 	id := c.Param("id")
 
 	if err := h.service.Delete(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "error deleting note",
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Message: "error deleting note",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "note deleted",
+	c.JSON(http.StatusOK, models.NoteResponse{
+		Message: "note deleted",
 	})
 	return
 }
 
-func (h *NoteHandler) GetNote(c *gin.Context) {
+// GetNoteByID godoc
+// @Summary      Get note by ID
+// @Description  Get details of a specific note by its ID
+// @Tags         notes
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Note ID"
+// @Success      200  {object}  models.Note
+// @Failure      400  {object}  models.ErrorResponse
+// @Failure      404  {object}  models.ErrorResponse
+// @Router       /api/notes/{id} [get]
+func (h *NoteHandler) GetNoteByID(c *gin.Context) {
 
 	id := c.Param("id")
 
 	note, err := h.service.GetByID(id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "error getting note",
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Message: "error getting note",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, note)
+	c.JSON(http.StatusOK, models.NoteResponse{
+		Message: "note retrieved",
+		Data:    *note,
+	})
 	return
 }
 
+// GetAll GetAllNotes godoc
+// @Summary      Get all notes
+// @Description  Retrieve a list of all notes
+// @Tags         notes
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   models.Notes
+// @Failure      500  {object}  models.ErrorResponse
+// @Router       /api/notes [get]
 func (h *NoteHandler) GetAll(c *gin.Context) {
 	notes, err := h.service.GetAll()
 	if err != nil {
@@ -118,13 +174,27 @@ func (h *NoteHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": notes,
+	c.JSON(http.StatusOK, models.Notes{
+		Notes: notes,
 	})
 	return
 }
 
 func (h *NoteHandler) HealthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, models.NoteResponse{
+		Message: "OK",
+	})
 	return
+}
+
+func (h *NoteHandler) GetIndexPage(c *gin.Context) {
+	c.File("./static/index.html")
+}
+
+func (h *NoteHandler) GetEditPage(c *gin.Context) {
+	c.File("./static/edit.html")
+}
+
+func (h *NoteHandler) GetCreatePage(c *gin.Context) {
+	c.File("./static/create.html")
 }

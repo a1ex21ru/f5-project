@@ -1,0 +1,11 @@
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+**/*_test.go
+*.md
+*.log
+bin/
+build/
+dist/
+vendor/
