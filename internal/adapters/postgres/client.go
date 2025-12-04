@@ -3,12 +3,14 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"f5-project/internal/models"
 	"fmt"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"os"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"f5-project/internal/models"
 )
 
 type Client struct {

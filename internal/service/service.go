@@ -2,11 +2,12 @@ package service
 
 import (
 	"errors"
-	"f5-project/internal/models"
-	"f5-project/internal/repository"
 	"log"
 	"strconv"
 	"time"
+
+	"f5-project/internal/models"
+	"f5-project/internal/repository"
 )
 
 type NoteService struct {
